@@ -15,5 +15,6 @@ public class Product extends BaseEntity{
     private String imageUrl;
     private Category category; // CATEGORY is not an enum coz, its highly updateable and will req maybe millions of rows to be effected in db
     // Category is now a separate table, so that one is row effected in case of change and coz of its id, in other tables no changes are needed
-
+    //Amazon gets their product tables data from vendors and vendors will have seller accounts to add details of products
+    //API call to save data
 }
