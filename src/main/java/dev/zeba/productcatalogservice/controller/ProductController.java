@@ -2,9 +2,11 @@ package dev.zeba.productcatalogservice.controller;
 
 import dev.zeba.productcatalogservice.dto.CategoryDto;
 import dev.zeba.productcatalogservice.dto.ProductDto;
+import dev.zeba.productcatalogservice.dto.ProductPitchDto;
 import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.service.DummyProductService;
 import dev.zeba.productcatalogservice.service.IProductService;
+import dev.zeba.productcatalogservice.service.PitchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,10 +33,12 @@ public class ProductController {
     //@Autowired to access object
 
 
-    public ProductController(IProductService iProductService) {
+    public ProductController(IProductService iProductService, PitchService pitchService) {
         this.iProductService = iProductService;
+        this.pitchService = pitchService;
     }
 
+    private PitchService pitchService;
     //API to get all products
     //1. make normal java function
     @GetMapping //attach end point or mapping to it so that users can call it
@@ -74,5 +78,19 @@ public class ProductController {
         categoryDto.setName(product.getCategory().getName());
         productDto.setCategoryDto(categoryDto);
         return productDto;
+    }
+
+    @GetMapping("/{id}/pitch")
+    public ResponseEntity<ProductPitchDto> generatePitch(@PathVariable Long id){
+        if(id<0)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        Product product = iProductService.getProductById(id);
+        if(product == null)
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        ProductPitchDto productPitchDto = new ProductPitchDto();
+        productPitchDto.setId(product.getId());
+        productPitchDto.setPitch(pitchService.generatePitch(product));
+        return new ResponseEntity<>(productPitchDto,HttpStatus.OK);
     }
 }
