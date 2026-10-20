@@ -6,6 +6,7 @@ import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.service.DummyProductService;
 import dev.zeba.productcatalogservice.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,12 @@ public class ProductController {
     //Get rid of /products and use RequestMapping
     @GetMapping("/{id}")
     ResponseEntity<ProductDto> getProductById(@PathVariable("id") Long id){ //PathVariable maps path variable to actual java variable
+        if(id<0)
+            return new ResponseEntity<>((HttpHeaders) null,HttpStatus.BAD_REQUEST);
+
         Product product = iProductService.getProductById(id);
+        if(product ==null)
+            return new ResponseEntity<>((HttpHeaders) null,HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(from(product), HttpStatus.OK);
     }
 
