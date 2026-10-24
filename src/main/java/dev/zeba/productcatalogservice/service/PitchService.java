@@ -4,6 +4,7 @@ import dev.zeba.productcatalogservice.dto.GroqPitchResponseDto;
 import dev.zeba.productcatalogservice.model.Product;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j //In prod good practise log i/p, intermediate process variable if any, o/p : not every DTO n all, coz prod cost increases! PII is never logged GDPR
 public class PitchService {
     private static final String GROQ_URL= "https://api.groq.com/openai/v1/chat/completions";
     private static final String MODEL="openai/gpt-oss-20b";
@@ -52,7 +54,8 @@ public class PitchService {
             throw new IllegalArgumentException("Pitch couldn't be generated");
         }
         catch (Exception e){
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage());
+            log.warn("Error in LLM call"+ e.getMessage());
             return "New arrival:"+product.getName()+" for just $"+product.getPrice()+". Check it out!";
         }
     }

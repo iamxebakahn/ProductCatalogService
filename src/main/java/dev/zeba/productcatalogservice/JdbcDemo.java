@@ -16,5 +16,8 @@ public class JdbcDemo {
         //common interface or a specification implemented by all ORMs. It doesnot contain any implementation. It only contains annotation/function name
         // : JPA. Actual implementation is given by ORM
         // Repo Layer talks to -> JPA behind scenese use-> ORM framework (hibernate/JOOQ/MyBatis) -> ORM frameworks talk to JDBC -> JDBC does db ops
+
+        //Types of SQL commands: DDL commands - create, alter, drop : DML - insert, delete, update - DTL also part of it
+        //ddl-auto: tells how hibernate should manage schema of data
     }
 }

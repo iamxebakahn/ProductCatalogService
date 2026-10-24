@@ -8,6 +8,7 @@ import dev.zeba.productcatalogservice.service.DummyProductService;
 import dev.zeba.productcatalogservice.service.IProductService;
 import dev.zeba.productcatalogservice.service.PitchService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -25,7 +26,7 @@ import java.util.List;
 public class ProductController {
 
     // @Autowired //Field injection: not being used here, not autowired constructor injection being used here
-    private IProductService iProductService; //Field injection: directly autowiring the field not used in production though, objects added via constructor
+    private final IProductService iProductService; //Field injection: directly autowiring the field not used in production though, objects added via constructor
     //private DummyProductService dummyProductService; //Dependency Inversion violated - 1 concrete dependent on other concrete
     //to write APIs (function +endpoint)
     //@Component for Spring IOC to create object directly/indirectly : Beans = objects created by Spring IOC, if created by us
@@ -33,14 +34,16 @@ public class ProductController {
     //@Autowired to access object
 
 
-    public ProductController(IProductService iProductService, PitchService pitchService) {
+    public ProductController(IProductService iProductService, PitchService pitchService, @Qualifier("dummyProductService") IProductService supplierService) {
         this.iProductService = iProductService;
         this.pitchService = pitchService;
+        this.supplierService = supplierService;
     }
 
-    private PitchService pitchService;
+    private final PitchService pitchService;
     //API to get all products
     //1. make normal java function
+    private final IProductService supplierService;
     @GetMapping //attach end point or mapping to it so that users can call it
     List<Product> getAllProducts(){
         //call service layer, repo layer
@@ -59,6 +62,8 @@ public class ProductController {
             return new ResponseEntity<>((HttpHeaders) null,HttpStatus.BAD_REQUEST);
 
         Product product = iProductService.getProductById(id);
+        //Product product = supplierService.getProductById(id);
+
         if(product ==null)
             return new ResponseEntity<>((HttpHeaders) null,HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(from(product), HttpStatus.OK);
