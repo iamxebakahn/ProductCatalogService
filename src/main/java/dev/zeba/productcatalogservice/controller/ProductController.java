@@ -68,14 +68,19 @@ public class ProductController {
 
     private  ProductDto from(Product product){
         ProductDto productDto = new ProductDto();
+        productDto.setId(product.getId());
         productDto.setName(product.getName());
         productDto.setDescription(product.getDescription());
         productDto.setPrice(product.getPrice());
-        CategoryDto categoryDto = new CategoryDto();
-        categoryDto.setDescription(product.getCategory().getDescription());
-        categoryDto.setId(product.getCategory().getId());
-        categoryDto.setName(product.getCategory().getName());
-        productDto.setCategoryDto(categoryDto);
+        productDto.setImageUrl(product.getImageUrl());
+
+        if(product.getCategory()!=null) {
+            CategoryDto categoryDto = new CategoryDto();
+            categoryDto.setDescription(product.getCategory().getDescription());
+            categoryDto.setId(product.getCategory().getId());
+            categoryDto.setName(product.getCategory().getName());
+            productDto.setCategoryDto(categoryDto);
+        }
         return productDto;
     }
 
@@ -106,5 +111,30 @@ public class ProductController {
             if(isDeleted)
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT); //204: i dont have content to return but your request was successful
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDto> replaceProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
+        if(id<0){
+            return ResponseEntity.badRequest().build();
+        }
+        Product product = storageService.replaceProduct(id,productDto);
+        if(product == null){
+            return ResponseEntity.notFound().build();
+        }
+
+        return new ResponseEntity<>(from(product),HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductDto> patchProduct(@PathVariable("id") Long id, @RequestBody ProductDto productDto){
+        if(id<0){
+            return ResponseEntity.badRequest().build();
+        }
+        Product product = storageService.patchProduct(id, productDto);
+        if(product == null){
+            return ResponseEntity.notFound().build();
+        }
+        return new ResponseEntity<>(from(product),HttpStatus.OK);
     }
 }

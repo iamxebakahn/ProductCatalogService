@@ -69,6 +69,52 @@ public class StorageProductService implements  IProductService{
         return true;
     }
 
+    @Override
+    public Product replaceProduct(Long id, ProductDto productDto) {
+        Product existing = productRepository.findByIdAndState(id,State.ACTIVE).orElse(null);
+        if(existing == null)
+            return null;
+
+        Product incoming = from(productDto);
+        existing.setName(incoming.getName());
+        existing.setDescription(incoming.getDescription());
+        existing.setPrice(incoming.getPrice());
+        existing.setImageUrl(incoming.getImageUrl());
+        existing.setCategory(findOrCreateCategory(incoming.getCategory()));
+        existing.setLastUpdatedAt(new Date());
+
+        return productRepository.save(existing);
+    }
+
+    @Override
+    public Product patchProduct(Long id, ProductDto productDto) {
+        Product existing = productRepository.findByIdAndState(id,State.ACTIVE).orElse(null);
+        if(existing == null)
+            return null;
+
+        if(productDto.getName()!= null)
+            existing.setName(productDto.getName());
+
+        if(productDto.getDescription()!=null)
+            existing.setDescription(productDto.getDescription());
+
+        if(productDto.getPrice()!=null)
+            existing.setPrice(productDto.getPrice());
+
+        if(productDto.getImageUrl()!=null)
+            existing.setImageUrl(productDto.getImageUrl());
+
+        if(productDto.getCategoryDto()!=null){
+            Category category = new Category();
+            category.setName(productDto.getCategoryDto().getName());
+            category.setDescription(productDto.getCategoryDto().getDescription());
+            existing.setCategory(findOrCreateCategory(category));
+        }
+
+        existing.setLastUpdatedAt(new Date());
+        return productRepository.save(existing);
+    }
+
     private Category findOrCreateCategory(Category category){
         if(category == null){
             return null;

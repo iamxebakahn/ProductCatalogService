@@ -5,7 +5,6 @@ import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
 import org.springframework.boot.restclient.RestTemplateBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -48,6 +47,16 @@ public class DummyProductService implements IProductService {
     @Override
     public boolean deleteProdcutById(Long id) {
         return false;
+    }
+
+    @Override
+    public Product replaceProduct(Long id, ProductDto productDto) {
+        return null;
+    }
+
+    @Override
+    public Product patchProduct(Long id, ProductDto productDto) {
+        return null;
     }
 
     private Product from(DummyJsonProductDto dummyJsonProductDto){

@@ -9,4 +9,7 @@ public interface IProductService {
     Product createProduct(ProductDto productDto);
 
     boolean deleteProdcutById(Long id);
+
+    Product replaceProduct(Long id, ProductDto productDto);
+    Product patchProduct(Long id, ProductDto productDto);
 }
