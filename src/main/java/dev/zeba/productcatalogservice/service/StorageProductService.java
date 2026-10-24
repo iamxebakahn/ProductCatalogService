@@ -1,11 +1,16 @@
 package dev.zeba.productcatalogservice.service;
 
+import dev.zeba.productcatalogservice.dto.ProductDto;
+import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
+import dev.zeba.productcatalogservice.model.enums.State;
+import dev.zeba.productcatalogservice.repository.CategoryRepository;
 import dev.zeba.productcatalogservice.repository.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,9 +19,11 @@ import java.util.Optional;
 @Slf4j
 public class StorageProductService implements  IProductService{
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
-    public StorageProductService(ProductRepository productRepository) {
+    public StorageProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -31,10 +38,80 @@ public class StorageProductService implements  IProductService{
 //
 //        return productOptional.get();
         log.info("Reading product from DB:" + id);
-        return productRepository.findById(id).orElse(null);
+        return productRepository.findByIdAndState(id,State.ACTIVE).orElse(null);
+    }
+
+    @Override
+    public Product createProduct(ProductDto productDto) {
+        //dto ->entity
+        //validations: value correct or not?
+        //check if category exists
+        //if not create category
+        //if yes get create category
+        //save(productDto)
+
+        Product product = from(productDto);
+        product.setCategory(findOrCreateCategory(product.getCategory()));
+        product.setCreatedAt(new Date());
+        product.setLastUpdatedAt(new Date());
+        product.setState(State.ACTIVE);
+        return productRepository.save(product); //due to cascade child entity : category will also be saved
+    }
+
+    @Override
+    public boolean deleteProdcutById(Long id) {
+        Product product = productRepository.findById(id).orElse(null);
+        if(product == null)
+            return false;
+        product.setState(State.INACTIVE);
+        product.setLastUpdatedAt(new Date());
+        productRepository.save(product);
+        return true;
+    }
+
+    private Category findOrCreateCategory(Category category){
+        if(category == null){
+            return null;
+        }
+
+        Optional<Category> existing = categoryRepository.findByName(category.getName()); //Custom JPA method: findBy[Attribute Name] ; findByGenderAndAgeGreaterThan
+        if(existing.isPresent()) {
+            return existing.get();
+        }
+
+        Date now = new Date();
+        category.setId(null);
+        category.setCreatedAt(now);
+        category.setLastUpdatedAt(now);
+        return category;
+    }
+    private Product from(ProductDto dto){
+        Product product = new Product();
+        product.setId(dto.getId());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setImageUrl(dto.getImageUrl());
+
+        if(dto.getCategoryDto()!=null){
+            Category category = new Category();
+            category.setName(dto.getCategoryDto().getName());
+            category.setDescription(dto.getCategoryDto().getDescription());
+            product.setCategory(category);
+        }
+
+        return product;
     }
 
     public List<Product> getAllProducts(){
         return productRepository.findAll();
     }
+
+    //PUT /UPDATE
+    //2 ways to update APIs: PUT/PATCH: PUT replaces entire object/ row of db: PATCH: partial update to existing object
+    //I/p of PUT: DTO  and id; PATCH: i/p is DTO, fields are nullable : check fields whichever is not null, is replaced
+    // bcoz PUT updates entire object, if only 1 field is sent in i/p DTO rest other fields are set to null, thats why PATCH is used, in such cases coz entire object is not worked upon,
+    // only non null fields are updated and returned
+    //standard is given for PUT and PATCH, implementation lies with programmer, SPRING cant enforce this behaviour
+    //delete: JPA method deelete does hard delete and removed entire row, we dont use that, we soft delete, set state to inactive only
 }

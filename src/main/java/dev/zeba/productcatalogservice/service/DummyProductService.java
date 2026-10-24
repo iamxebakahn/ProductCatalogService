@@ -1,6 +1,7 @@
 package dev.zeba.productcatalogservice.service;
 
 import dev.zeba.productcatalogservice.dto.DummyJsonProductDto;
+import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
 import org.springframework.boot.restclient.RestTemplateBuilder;
@@ -37,6 +38,16 @@ public class DummyProductService implements IProductService {
         catch (HttpClientErrorException.NotFound e){
             return  null;
         }
+    }
+
+    @Override
+    public Product createProduct(ProductDto productDto) {
+        return null;
+    }
+
+    @Override
+    public boolean deleteProdcutById(Long id) {
+        return false;
     }
 
     private Product from(DummyJsonProductDto dummyJsonProductDto){
