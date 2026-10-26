@@ -7,11 +7,15 @@ import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.service.IProductService;
 import dev.zeba.productcatalogservice.service.PitchService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController //it has @Component inside it, why restcontroller n why not component? : coz we need Spring to do other stuff too
@@ -136,5 +140,17 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
         return new ResponseEntity<>(from(product),HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    //params related to searching go in query params (request params) and not in path variables
+    //RequestParams are by default mandatory, but we can set them default = false, if we dont want them
+    //search API to give products in price range: i/p min - max price
+    //Pageable object allows clients to send page related info: sorting param, size param, page number param
+    public PagedModel<ProductDto> getProductsInPriceRange(@RequestParam(required = false)BigDecimal minPrice, @RequestParam(required = false)BigDecimal maxPrice,
+                                              Pageable pageable){
+        Page<ProductDto> productDtos = storageService.getProductsInPriceRange(minPrice,maxPrice,pageable).map(Product x -> from(x));
+        return (PagedModel<ProductDto>) productDtos;
+
     }
 }

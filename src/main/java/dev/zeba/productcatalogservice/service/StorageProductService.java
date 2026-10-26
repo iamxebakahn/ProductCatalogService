@@ -8,8 +8,11 @@ import dev.zeba.productcatalogservice.repository.CategoryRepository;
 import dev.zeba.productcatalogservice.repository.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -151,6 +154,11 @@ public class StorageProductService implements  IProductService{
 
     public List<Product> getAllProducts(){
         return productRepository.findAll();
+    }
+
+    @Override
+    public Page<ProductDto> getProductsInPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return productRepository.findByPriceBetweenAndState(minPrice,maxPrice,State.ACTIVE,pageable);
     }
 
     //PUT /UPDATE

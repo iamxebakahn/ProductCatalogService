@@ -1,14 +1,21 @@
 package dev.zeba.productcatalogservice.service;
 
 import dev.zeba.productcatalogservice.dto.DummyJsonProductDto;
+import dev.zeba.productcatalogservice.dto.DummyJsonProductListDto;
 import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
 import org.springframework.boot.restclient.RestTemplateBuilder;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.awt.print.Pageable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class DummyProductService implements IProductService {
@@ -58,6 +65,22 @@ public class DummyProductService implements IProductService {
     public Product patchProduct(Long id, ProductDto productDto) {
         return null;
     }
+
+    @Override
+    public List<Product> getAllProducts() {
+        ResponseEntity<DummyJsonProductListDto> response = restTemplate.getForEntity("https://dummyjson.com/products?limit=0", DummyJsonProductListDto.class);
+        List<Product> products = new ArrayList<>();
+        for(DummyJsonProductDto dummyJsonProductDto: response.getBody().getProducts()){
+            products.add(from(dummyJsonProductDto));
+        }
+        return products;
+    }
+
+    @Override
+    public Page<ProductDto> getProductsInPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return null;
+    }
+
 
     private Product from(DummyJsonProductDto dummyJsonProductDto){
         Product product = new Product();

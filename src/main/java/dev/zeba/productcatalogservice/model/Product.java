@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
+@Table(indexes = @Index(name = "idx_product_name",columnList = "name")) // in pprod indexes are written via sql queries not via hibernate
+//even if am writing queries in sql i need to annotate here, coz it's going to serve as documentation to fellow developers
 public class Product extends BaseEntity{
     //Double is not used in production for precision - only BigDecimal is used - for 0 error
     private String name;
