@@ -3,6 +3,7 @@ package dev.zeba.productcatalogservice.controller;
 import dev.zeba.productcatalogservice.dto.CategoryDto;
 import dev.zeba.productcatalogservice.dto.ProductDto;
 import dev.zeba.productcatalogservice.dto.ProductPitchDto;
+import dev.zeba.productcatalogservice.mappers.ProductMapper;
 import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.service.IProductService;
 import dev.zeba.productcatalogservice.service.PitchService;
@@ -13,9 +14,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 
-import java.awt.print.Pageable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController //it has @Component inside it, why restcontroller n why not component? : coz we need Spring to do other stuff too
@@ -30,22 +32,34 @@ public class ProductController {
     //@Component for Spring IOC to create object directly/indirectly : Beans = objects created by Spring IOC, if created by us
     // they are called as Java Objects (Bean is Java object managed by Spring IOC and not programmer)
     //@Autowired to access object
-
-
-    public ProductController(IProductService storageService, PitchService pitchService, @Qualifier("dummyProductService") IProductService supplierService) {
+    public ProductController(IProductService storageService, PitchService pitchService, @Qualifier("dummyProductService") IProductService supplierService, IProductService productService, ProductMapper productMapper) {
         this.storageService = storageService;
         this.pitchService = pitchService;
         this.supplierService = supplierService;
+        this.productMapper = productMapper;
     }
 
     private final PitchService pitchService;
     //API to get all products
     //1. make normal java function
     private final IProductService supplierService;
+    private final ProductMapper productMapper;
     @GetMapping //attach end point or mapping to it so that users can call it
-    List<Product> getAllProducts(){
+    List<ProductDto> getAllProducts(){
         //call service layer, repo layer
-        return List.of();
+        List<Product> products = storageService.getAllProducts();
+        List<ProductDto> productDtos = new ArrayList<>();
+        for(Product product: products){
+            productDtos.add(productMapper.toDto(product));
+        }
+        return productDtos; //1+24 queries, were fired for returning product dtos, coz of 24 categories!
+        //by default hibernate doesnot use join instead find main entity then find 2nd entity
+        //1 query but hibernate 1+N queries, db efficiency effected - in big relationship creates a problem
+        //hence use of @Entity Graph, tells hibernate to fetch which entity while fetching main entity
+        //using fetch in join queries in JPQL, also eliminates N to fire 1 query, only fires 1 query
+        //in entities relationship, hibernate tries to fetch entities and its relationships but via separate queries
+        //to avoid multiple queries shooting, use join fetch
+        //in our custom functions, we can mention @Entity Graph to tell hibernate to not fetch relationships via separate queries
     }
 
     //Path variable - when i/p is in link
@@ -64,7 +78,7 @@ public class ProductController {
 
         if(product ==null)
             return new ResponseEntity<>((HttpHeaders) null,HttpStatus.NOT_FOUND);
-        return new ResponseEntity<>(from(product), HttpStatus.OK);
+        return new ResponseEntity<>(productMapper.toDto(product), HttpStatus.OK);
     }
 
     //http response has 3 parts: headers, body/content, status code
@@ -96,6 +110,7 @@ public class ProductController {
         Product product = storageService.getProductById(id);
         if(product == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
         ProductPitchDto productPitchDto = new ProductPitchDto();
         productPitchDto.setId(product.getId());
         productPitchDto.setPitch(pitchService.generatePitch(product));
@@ -105,7 +120,7 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto){
         Product product = storageService.createProduct(productDto);
-        return new ResponseEntity<>(from(product),HttpStatus.CREATED);
+        return new ResponseEntity<>(productMapper.toDto(product),HttpStatus.CREATED);
     }
 
     @DeleteMapping("{id}")
@@ -147,10 +162,12 @@ public class ProductController {
     //RequestParams are by default mandatory, but we can set them default = false, if we dont want them
     //search API to give products in price range: i/p min - max price
     //Pageable object allows clients to send page related info: sorting param, size param, page number param
+    //PagedModel: contains metadata about pages which client can use to ask for next page, to decide what next action client needs
+    //to do (information like how many pages are there, total entries in a page, current page number, next page number client can ask)
     public PagedModel<ProductDto> getProductsInPriceRange(@RequestParam(required = false)BigDecimal minPrice, @RequestParam(required = false)BigDecimal maxPrice,
                                               Pageable pageable){
-        Page<ProductDto> productDtos = storageService.getProductsInPriceRange(minPrice,maxPrice,pageable).map(Product x -> from(x));
-        return (PagedModel<ProductDto>) productDtos;
-
+        Page<ProductDto> productDtos = storageService.getProductsInPriceRange(minPrice,maxPrice,pageable).map(product -> productMapper.toDto(product));
+        return new PagedModel<>(productDtos);
+        //page number, page size, sort on which attribute : can be passed via pagedmodel
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -153,11 +153,11 @@ public class StorageProductService implements  IProductService{
     }
 
     public List<Product> getAllProducts(){
-        return productRepository.findAll();
+        return productRepository.findAllProducts();
     }
 
     @Override
-    public Page<ProductDto> getProductsInPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+    public Page<Product> getProductsInPriceRange(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         return productRepository.findByPriceBetweenAndState(minPrice,maxPrice,State.ACTIVE,pageable);
     }
 
