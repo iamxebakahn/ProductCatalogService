@@ -7,7 +7,8 @@ import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.model.enums.State;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component// creates a bean/object of this class to be used to inject into other class
+//doing this to reuse logic and testing efficiency improves
 public class ProductMapper {
     public ProductDto toDto(Product product){
         ProductDto productDto = new ProductDto();

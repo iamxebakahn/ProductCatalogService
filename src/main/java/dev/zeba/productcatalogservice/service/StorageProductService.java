@@ -1,11 +1,13 @@
 package dev.zeba.productcatalogservice.service;
 
 import dev.zeba.productcatalogservice.dto.ProductDto;
+import dev.zeba.productcatalogservice.mappers.ProductMapper;
 import dev.zeba.productcatalogservice.model.Category;
 import dev.zeba.productcatalogservice.model.Product;
 import dev.zeba.productcatalogservice.model.enums.State;
 import dev.zeba.productcatalogservice.repository.CategoryRepository;
 import dev.zeba.productcatalogservice.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -20,15 +22,20 @@ import java.util.Optional;
 @Service
 @Primary
 @Slf4j
+@RequiredArgsConstructor // The more the dependencies the constructor will keep on growing, hence the annotation
+//it generates constructor for all the final fields; part of lombok
 public class StorageProductService implements  IProductService{
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductMapper productMapper;
 
-    public StorageProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+/*
+    public StorageProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.productMapper = productMapper;
     }
-
+*/
     @Override
     public Product getProductById(Long id) {
 //        Optional<Product> productOptional = productRepository.findById(id);
@@ -53,7 +60,7 @@ public class StorageProductService implements  IProductService{
         //if yes get create category
         //save(productDto)
 
-        Product product = from(productDto);
+        Product product = productMapper.toEntity(productDto);
         product.setCategory(findOrCreateCategory(product.getCategory()));
         product.setCreatedAt(new Date());
         product.setLastUpdatedAt(new Date());

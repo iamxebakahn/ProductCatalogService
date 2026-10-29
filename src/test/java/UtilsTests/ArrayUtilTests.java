@@ -18,7 +18,7 @@ public class ArrayUtilTests {
         int shelf[] = {10,20,30}; //this line's preparing input
         int actual = ArrayUtils.getElementByIndex(shelf,1);  //this line's acting on it
         assertEquals(20,actual); //this line's asserting /verifying
-        //franework to write test case: AAA philosophy : Arrange: prepare i/p, Act: actually calling i/p, Assert: verifying whether test is possible
+        //framework to write test case: AAA philosophy : Arrange: prepare i/p, Act: actually calling i/p, Assert: verifying whether test is possible
     }
 
     @Test
